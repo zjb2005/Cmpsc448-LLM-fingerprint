@@ -1,0 +1,13 @@
+cnn | output | val_acc 0.6424 | test_acc 0.6115 | macro_f1 0.6045
+cnn | input | val_acc 0.2321 | test_acc 0.2048 | macro_f1 0.1970
+cnn | both | val_acc 0.5981 | test_acc 0.5774 | macro_f1 0.5628
+lstm | output | val_acc 0.6407 | test_acc 0.6166 | macro_f1 0.6227
+lstm | input | val_acc 0.2231 | test_acc 0.2121 | macro_f1 0.2096
+lstm | both | val_acc 0.5863 | test_acc 0.5803 | macro_f1 0.5804
+RQ3 cnn | in-domain acc 0.6084 f1 0.5988 | writing (unseen) acc 0.5480 f1 0.5107
+RQ3 lstm | in-domain acc 0.6113 f1 0.6025 | writing (unseen) acc 0.5379 f1 0.4915
+RQ4 logistic regression on 11 hand features | test_acc 0.4027 macro_f1 0.3949
+RQ4 ablation [full text (baseline)] | cnn test_acc 0.5978 macro_f1 0.5866
+RQ4 ablation [no punctuation or markdown] | cnn test_acc 0.5615 macro_f1 0.5394
+RQ4 ablation [symbols and layout only] | cnn test_acc 0.5615 macro_f1 0.5639
+RQ4 ablation [first 50 words only] | cnn test_acc 0.5145 macro_f1 0.5028
