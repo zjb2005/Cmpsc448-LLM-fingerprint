@@ -1,10 +1,4 @@
-# builds the dataset for the project.
-# pulls lmsys/chatbot_arena_conversations off huggingface, pulls out
-# (model, prompt, response) rows and writes train/val/test csv into data/
-#
-# you need a huggingface account for this one, the dataset is gated.
-# go to https://huggingface.co/datasets/lmsys/chatbot_arena_conversations
-# click agree, then either run `huggingface-cli login` or set HF_TOKEN.
+#Require a huggingface account for this one, the dataset is gated, go to https://huggingface.co/datasets/lmsys/chatbot_arena_conversations, click agree, then either run `huggingface-cli login` or set HF_TOKEN.
 
 import os
 import re
@@ -13,9 +7,6 @@ import pandas as pd
 from datasets import load_dataset
 
 random.seed(42)
-
-# which models we actually keep. everything else gets thrown away.
-# grouped by who made them / what the base model is
 FAMILY = {
     "gpt-4": "GPT",
     "gpt-3.5-turbo": "GPT",
@@ -26,14 +17,10 @@ FAMILY = {
     "vicuna-7b": "Vicuna",
     "koala-13b": "Koala",
 }
-
 MIN_WORDS = 10
 MAX_WORDS = 800
 
-
 def first_turn(conv):
-    # conversation is a list like [{'role':'user',...},{'role':'assistant',...}]
-    # just grab the first user msg and the first assistant msg
     prompt = None
     answer = None
     for m in conv:
@@ -43,32 +30,25 @@ def first_turn(conv):
             answer = m["content"]
     return prompt, answer
 
-
 def guess_task(prompt):
-    # no task labels in the dataset so i'm doing it with keywords.
-    # rough but it's enough to split the data for RQ3
     p = prompt.lower()
     code_words = ["code", "python", "java", "c++", "javascript", "function",
                   "program", "sql", "html", "bug", "compile", "script", "```"]
     for w in code_words:
         if w in p:
             return "coding"
-
     write_words = ["write a poem", "write a story", "write an essay", "write a song",
                    "poem", "story about", "essay", "email to", "blog post", "lyrics",
                    "write a letter"]
     for w in write_words:
         if w in p:
             return "writing"
-
     math_words = ["calculate", "solve", "equation", "math", "probability",
                   "derivative", "integral", "how many", "sum of", "percent"]
     for w in math_words:
         if w in p:
             return "math"
-
     return "general"
-
 
 print("downloading dataset (this takes a minute the first time)...")
 ds = load_dataset("lmsys/chatbot_arena_conversations", split="train")
@@ -76,11 +56,8 @@ print("got", len(ds), "battles")
 
 rows = []
 for r in ds:
-    # english only, keeps things clean. for the multi turn battles i just take
-    # the very first exchange, that is still one prompt and one response
     if r["language"] != "English":
         continue
-
     for side in ["a", "b"]:
         model = r["model_" + side]
         if model not in FAMILY:
@@ -109,11 +86,9 @@ print("after filtering:", len(df), "rows")
 print(df["model"].value_counts())
 print(df["family"].value_counts())
 
-# drop exact duplicate answers, some models repeat canned refusals a lot
 df = df.drop_duplicates(subset=["family", "response"])
 print("after dropping dup responses:", len(df))
 
-# balance the classes, otherwise the model just learns to say "vicuna"
 counts = df["family"].value_counts()
 n_each = int(counts.min())
 print("balancing every class down to", n_each)
@@ -128,10 +103,6 @@ df = df.sample(frac=1.0, random_state=42).reset_index(drop=True)
 print("final size:", len(df))
 print(df["task"].value_counts())
 
-# IMPORTANT: split on question id, not on rows.
-# every battle shows the same prompt to two models, so if i split randomly
-# the same prompt ends up in train with one label and in test with another
-# label, and the input-only numbers would be garbage.
 qids = sorted(df["qid"].unique())
 random.shuffle(qids)
 n = len(qids)
