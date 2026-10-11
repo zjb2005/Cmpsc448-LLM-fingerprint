@@ -2,7 +2,7 @@
 
 CMPSC 448 midterm project.
 
-Team: Junbo Zhao (team leader), Canyi Cheng
+Team: Junbo Zhao (team leader), Canyi Cheng, Yehe Cui
 
 ## What this is
 
