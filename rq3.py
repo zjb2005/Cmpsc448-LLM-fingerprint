@@ -1,9 +1,3 @@
-# RQ3 (extra credit): do the fingerprints carry over to a task the model never saw?
-# train on coding + math + general question answering, then test on creative writing.
-# compare that against testing on held out data from the same tasks.
-#
-# usage: python rq3.py
-
 import os
 import random
 import pandas as pd
@@ -24,18 +18,14 @@ if not os.path.exists("results"):
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 print("device:", device)
-
-# glue the three splits back together, i need to cut it a different way this time
 allpieces = [load_split("train"), load_split("val"), load_split("test")]
 df = pd.concat(allpieces).reset_index(drop=True)
 print("total rows:", len(df))
 print(df["task"].value_counts())
-
 seen = df[df["task"] != "writing"]
 unseen = df[df["task"] == "writing"]
 print("seen tasks:", len(seen), " unseen (writing):", len(unseen))
 
-# split the seen part by question id again so no prompt shows up on both sides
 random.seed(SEED)
 qids = sorted(seen["qid"].unique())
 random.shuffle(qids)
@@ -46,11 +36,10 @@ te_q = set(qids[int(0.85 * n):])
 
 train = seen[seen["qid"].isin(tr_q)]
 val = seen[seen["qid"].isin(va_q)]
-test_in = seen[seen["qid"].isin(te_q)]      # same tasks as training
-test_out = unseen                           # the task it never saw
+test_in = seen[seen["qid"].isin(te_q)]
+test_out = unseen
 print("train", len(train), "val", len(val), "in-domain test", len(test_in),
       "out-of-domain test", len(test_out))
-
 
 def run(which):
     print("=" * 50)
@@ -83,19 +72,14 @@ def run(which):
 
     log_result("RQ3 %s | in-domain acc %.4f f1 %.4f | writing (unseen) acc %.4f f1 %.4f"
                % (which, a1, f1a, a2, f1b))
-
-    # per class numbers on the unseen task, this tells us which models stay
-    # recognizable when the task changes
     rep = classification_report(yout.tolist(), p_out, labels=list(range(len(LABELS))),
                                 target_names=LABELS, digits=3)
     print(rep)
     f = open("results/rq3_%s_unseen_report.txt" % which, "w")
     f.write(rep)
     f.close()
-
     plot_cm(yout.tolist(), p_out, "%s tested on unseen task (writing)" % which.upper(),
             "results/rq3_cm_%s.png" % which)
-
 
 run("cnn")
 run("lstm")
