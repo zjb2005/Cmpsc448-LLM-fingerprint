@@ -2,7 +2,7 @@
 
 CMPSC 448 midterm project.
 
-Team: Junbo Zhao (team leader), Canyi Cheng, Yehe Cui
+Team: Junbo Zhao (team leader, jzz5658@psu.edu), Canyi Cheng (cvc6413@psu.edu), Yehe Cui (yfc5461@psu.edu)
 
 ## What this is
 
