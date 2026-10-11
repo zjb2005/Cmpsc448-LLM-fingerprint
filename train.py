@@ -1,14 +1,3 @@
-# main experiment script, covers RQ1 and RQ2.
-#
-# usage:
-#   python train.py cnn output      <- this one is RQ1
-#   python train.py lstm output     <- RQ1
-#   python train.py cnn input       <- RQ2
-#   python train.py cnn both        <- RQ2
-#   ... etc
-#
-# or just run  python train.py all  and it does all 6 combinations.
-
 import os
 import sys
 import torch
@@ -24,7 +13,6 @@ EPOCHS = 8
 BATCH = 64
 SEED = 42
 
-
 def run_one(which, field, train, val, test, device):
     print("=" * 50)
     print("running", which, "on", field)
@@ -34,7 +22,6 @@ def run_one(which, field, train, val, test, device):
     va_text = make_text(val, field)
     te_text = make_text(test, field)
 
-    # vocab only from training data, otherwise that's cheating
     vocab = build_vocab(tr_text, VOCAB_SIZE)
     print("vocab size:", len(vocab))
 
@@ -68,7 +55,6 @@ def run_one(which, field, train, val, test, device):
     plot_cm(yte.tolist(), pred, "%s, %s only" % (which.upper(), field),
             "results/cm_%s_%s.png" % (which, field))
     return acc, f1
-
 
 if not os.path.exists("results"):
     os.mkdir("results")
