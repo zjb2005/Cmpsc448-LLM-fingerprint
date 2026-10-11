@@ -1,10 +1,3 @@
-# RQ4 (extra credit): what is actually different between these models?
-# part 1 - measure surface features per family (length, vocabulary, punctuation, markdown)
-# part 2 - logistic regression on just those hand made features
-# part 3 - ablations: take a signal away, retrain the CNN, see how much accuracy drops
-#
-# usage: python rq4.py
-
 import os
 import re
 import numpy as np
@@ -32,9 +25,7 @@ train = load_split("train")
 val = load_split("val")
 test = load_split("test")
 
-
-# ---------------- part 1: descriptive stats ----------------
-
+#descriptive stats
 def feats(text):
     text = str(text)
     words = text.split()
@@ -69,7 +60,6 @@ def feats(text):
         "code_blocks": code,
     }
 
-
 print("computing features on the training set...")
 rows = []
 for r, fam in zip(train["response"], train["family"]):
@@ -83,7 +73,6 @@ print(table)
 table.to_csv("results/rq4_feature_table.csv")
 print("saved results/rq4_feature_table.csv")
 
-# a couple of plots for the report
 fig, axes = plt.subplots(1, 3, figsize=(13, 3.6))
 for ax, col, name in zip(axes,
                          ["n_words", "ttr", "bullets"],
@@ -100,7 +89,6 @@ fig.savefig("results/rq4_features.png", dpi=150)
 plt.close(fig)
 print("saved results/rq4_features.png")
 
-# length distribution, this one usually looks pretty different per model
 fig, ax = plt.subplots(figsize=(6, 4))
 for fam in LABELS:
     v = fdf[fdf["family"] == fam]["n_words"]
@@ -113,12 +101,9 @@ fig.savefig("results/rq4_length_hist.png", dpi=150)
 plt.close(fig)
 print("saved results/rq4_length_hist.png")
 
-
-# ---------------- part 2: logistic regression on the hand features ----------------
-
+#logistic regression
 cols = ["n_words", "avg_word_len", "n_sents", "avg_sent_len", "ttr",
         "punct_per_100w", "bullets", "numbered", "bold", "headings", "code_blocks"]
-
 
 def feat_matrix(df):
     rows = []
@@ -127,13 +112,11 @@ def feat_matrix(df):
         rows.append([d[c] for c in cols])
     return np.array(rows)
 
-
 Xtr = feat_matrix(train)
 Xte = feat_matrix(test)
 ytr = [LABELS.index(f) for f in train["family"]]
 yte = [LABELS.index(f) for f in test["family"]]
 
-# scale it by hand, the length column is way bigger than the rest
 mu = Xtr.mean(axis=0)
 sd = Xtr.std(axis=0)
 sd[sd == 0] = 1.0
@@ -147,22 +130,15 @@ a, f1 = score(yte, pred)
 log_result("RQ4 logistic regression on %d hand features | test_acc %.4f macro_f1 %.4f"
            % (len(cols), a, f1))
 
-
-# ---------------- part 3: ablations ----------------
-
+#ablations
 def no_symbols(t):
-    # kill punctuation, markdown, newlines. only words are left
     return re.sub(r"[^A-Za-z0-9\s]", " ", str(t))
 
-
 def only_symbols(t):
-    # the opposite, throw the words away and keep the layout
     return re.sub(r"[A-Za-z0-9]+", " ", str(t))
-
 
 def short(t):
     return " ".join(str(t).split()[:50])
-
 
 def run_ablation(name, fn):
     print("=" * 50)
@@ -185,7 +161,6 @@ def run_ablation(name, fn):
     p = predict(model, xte, device)
     a, f1 = score(yte2.tolist(), p)
     log_result("RQ4 ablation [%s] | cnn test_acc %.4f macro_f1 %.4f" % (name, a, f1))
-
 
 run_ablation("full text (baseline)", lambda t: str(t))
 run_ablation("no punctuation or markdown", no_symbols)
