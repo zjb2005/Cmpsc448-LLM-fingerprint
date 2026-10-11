@@ -1,9 +1,3 @@
-# extra plots for the write up. reads results/summary.txt for the bar charts.
-# the val curves are copied by hand from the colab output since train.py
-# only prints them (should have saved them to a file, oh well)
-#
-# usage: python report_plots.py
-
 import re
 import matplotlib
 matplotlib.use("Agg")
@@ -11,13 +5,12 @@ import matplotlib.pyplot as plt
 
 lines = open("results/summary.txt").read().strip().split("\n")
 
-# ---- RQ1/RQ2 bar chart ----
+#RQ1/RQ2 chart
 acc = {}
 for ln in lines:
     m = re.match(r"(cnn|lstm) \| (\w+) \| val_acc [\d.]+ \| test_acc ([\d.]+)", ln)
     if m:
         acc[(m.group(1), m.group(2))] = float(m.group(3))
-
 fields = ["input", "output", "both"]
 fig, ax = plt.subplots(figsize=(6, 3.8))
 w = 0.35
@@ -37,7 +30,7 @@ fig.savefig("results/rq2_bars.png", dpi=150)
 plt.close(fig)
 print("saved results/rq2_bars.png")
 
-# ---- RQ4 ablation chart ----
+#RQ4 chart
 names = []
 accs = []
 for ln in lines:
@@ -48,7 +41,6 @@ for ln in lines:
 m = re.search(r"logistic regression.*test_acc ([\d.]+)", "\n".join(lines))
 names.append("log. reg. on 11 features")
 accs.append(float(m.group(1)))
-
 short_names = ["full text\n(baseline)", "no punctuation\nor markdown", "symbols and\nlayout only",
                "first 50\nwords only", "log. reg. on\n11 features"]
 fig, ax = plt.subplots(figsize=(7, 3.6))
@@ -66,7 +58,7 @@ fig.savefig("results/rq4_ablation_bars.png", dpi=150)
 plt.close(fig)
 print("saved results/rq4_ablation_bars.png")
 
-# ---- validation accuracy per epoch (copied from the training log) ----
+#validation accuracy
 curves = {
     "CNN output": [0.5011, 0.5841, 0.5673, 0.6087, 0.6188, 0.6379, 0.6362, 0.6424],
     "LSTM output": [0.4456, 0.5370, 0.5729, 0.5891, 0.6143, 0.6295, 0.6407, 0.6087],
