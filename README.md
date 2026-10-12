@@ -51,3 +51,9 @@ Everything gets written into `results/` - the accuracy numbers go into
   prompt on both sides and the input-only experiment would be meaningless.
 - Classes are balanced by downsampling to the size of the smallest family, so the
   random baseline is 20%.
+  ### Dataset Inspection
+
+Run the following command to inspect dataset size, class balance, missing values, and average response length:
+
+```bash
+python inspect_data.py
